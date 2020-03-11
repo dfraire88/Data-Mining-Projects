@@ -1,0 +1,495 @@
+---
+title: 'Short and Long Term Effects of Headstart'
+author: "Frank Chou, David Fraire, Tejaswi Pukkalla"
+date: "May 16, 2019"
+output: pdf_document
+---
+
+```{r libraries, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readstata13)
+library(clusterSEs)
+library(stargazer)
+library(effects)
+library(knitr)
+```
+
+# Abstract
+With recent budget cuts in the Federal Budget allocation of funds to the Department of Education, the age old debate on the efficacy of the Head Start program has resurfaced. We use David Deming's data collected from the National Longitudinal Survey of Youth (NLSY79) as our baseline data and explore if there were any short term and/or long term benefits of participating in the Head Start program for children from socioeconomically disadvantaged backgrounds. We see that there is a statistically significant negative effect of Head Start on a child's composite score from ages 6 to 11. Although there is a positive effect of Head Start on composite scores when we controlled for race, this effect is statistically insignificant. We also see that there is a negative effect of Head Start on the PPVT scores at the age of 3. This was expected, as children who are eligible for Head Start would have lower PPVT scores when compared non-eligible children. Head Start also implies a lower probability of grade repetition. We do however see a positive effect of Head Start on long term outcomes such as High School Graduation, College enrollment, and better Health conditions.
+
+# Introduction
+
+Head Start is a nationwide preschool program targeted at children who come from socioeconomically disadvantaged backgrounds. The program, started in 1965 as part of the 'War on Poverty', is funded Federally. Head Start has helped over 30 million children and their families in all 50 states, the District of Columbia, Puerto Rico, and the U.S. territories. It provides comprehensive early childhood education, health, nutrition, and parent involvement services to these children and their families. It helps create healthy development in children ages 3 to 5 from low-income families. 
+
+Children are eligible based on their net family income. Although each local program includes other eligibility criteria, such as disabilities and services needed by other family members. Families must earn less than the Federal poverty level (Family of 3 is $22,000). Families may qualify under a special eligibility category. Kids from higher income families or families experiencing emergency situations can be enrolled up to 10% of any funded program. While the Obama administration consistently increased the funding for the Head Start program, the Trump administration has cut down the budget allocated for education and training outlays by about 45.7% - which severely impacted Head Start programs. This brought us to our research question: Is Head Start effective? Does it have any short-term and/or long-term benefit on its participants? Does this effect vary for different races? Many studies have been conducted during Head Start's multi-decade history to measure its effectiveness. Based on our literature review of the subject, there seems to be no academic or political consensus about the program's effectiveness.
+
+CCR Analytics published their results in 2014, studying 49,467 children assessed in the 2012-2013 school year from 81 Head Start programs throughout California. The study was open to all Californian Head Start programs who used the DRDP-PS 2010 assessment tool. CCR Analytics found that by providing two years of Head Start services to a child increases the probability by at least 13% that the child will be ready for school. In 2009, David Deming evaluated the program, using the National Longitudinal Survey of Youth 1979. He compared siblings and found that those who attended Head Start showed stronger academic performance, more likely to graduate from high school, attend college, and less likely to suffer from poor health as an adult. We are using Deming's dataset as our primary dataset to explore the causality effects and see if we can get similar results or have something new waiting for us.
+
+According to Lee, who collected data across sixty Head Start classrooms in 2007 and 2008, Head Start is associated with significant gains in test scores and significantly reduces the probability that a child will repeat a grade. In 2005, Barnett and Hustedt reviewed the literature and stated that although the reviews found were mixed, they were generally positive. According to the Administrative History of the Office of Economic Opportunity, children who finish the program and are sent to disadvantaged schools perform worse than their peers by as early as second grade. Only by isolating such children and sending them to better schools could gains be sustained. Time magazine's columnist Joe Klein, in 2011, called for the elimination of Head Start, citing an internal undisclosed report that the program is costly and makes a negligible impact on children's well-being. W. Steven Barnett, director of the National Institute for Early Education Research at Rutgers University, rebutted Klein stating that the weighing all of the evidence and not just that cited by partisans on one side or the other leads to the most accurate conclusion that Head Start produces modest benefits including some long-term gains for children.
+
+# Methodology
+
+Given that the National Longitudinal Survey of Youth consisted of survey participants from 1979 to 2004, there were a number of significant data processing steps needed prior to any analysis. With 12,686 participants spanning nearly two decades, individuals were interviewed annually until 1994, and then biennially afterwards. The age of the cohort within the survey consisted of individuals born between 1957 and 1964. The gender ratio was split approximately 50:50 between men and women (6,403) males and (6,283) females. Our goals of understanding the short and long term effects of the Head Start program, focused on the subset of children born to the female NLSY79 respondents. 
+
+Using the data created by Deming in his paper *"Early Childhood Intervention and Life-Cycle Skill Development: Evidence from Head Start,"* we utilized a subset of 11,470 children from the NLSY79 survey to conduct our paper. The first step was the identification of which independent and dependent variables that we would examine. With variables ranging from whether or not a child had a disability to asthma, income levels at 3 years hold, to test scores on the Peabody Individual Achievement Test (PIAT) for both Math (PIATMT) and Reading Comprehension (PIATRC), the goal was to read though the 882 variable list and find the features that we think would be useful to define our research question, and provide the underlying dataset to demonstrate our findings. With this in mind, we focused on the following variables to help us answer our question:
+
+* **Composite Scores from ages 6 to 11**
+* **Composite Scores from ages 12 to 14**
+* **Composite Scores from ages 15 to 18**
+* **Peabody Picture Vocabulary Test (PPVT) at 3 years old**
+* **High School Graduation**
+* **College Enrollment**
+* **Grade Repetition**
+* **Self Reported Health**
+
+The **Composite Scores** were generated by selecting the number of children throughout the survey time frame who were at a given age at any given time. The composite score was generated from multiplying the percentile scores of each child from the Peabody Picture Vocabulary Test, Peabody Individual Achievement Math Test, and Peabody Individual Achievement Reading Comprehension Test. The goal behind this design was such that all participating children within the study can be ranked and compared within each year's cohorts, as well as across time between cohorts. 
+
+The **Peabody Picture Vocabulary Test** itself was the direct raw score from when the child was tested at 3 years old from the years 1986, 1988, and 1990. 
+
+The **High School Graduation** was a indicator variable generated from whether or not a child every graduated from high school. Given that we have different cohorts of children each reaching and completing high school at different years, this indicator variable would be 0 for children who have not reached and completed a high school education, i.e. a child born in 1998, was aged 6 in the year 2004, and therefore, has a High School Graduation variable as 0
+
+**College Enrollment** was an indicator variable structured much like High School Graduation. If a child ever reached 13 years of education, namely, a university/college institution, this variable would become 1 and 0 otherwise. Children who were too young, would still have an result of 0.
+
+**Grade Repetition** was an indicator variable based on whether or not a child ever repeated one or more grades from primary (elementary), secondary (middle and high), and tertiary school (university) levels.
+
+**Self Reported Health** was an indicator variable based on whether or not an individual ever reported a less than 3 on a scale of 5 during the survey.
+
+# Results and Analysis
+
+```{r frank preprocessing, include=FALSE}
+rm(list=ls())
+library(tidyverse)
+library(readstata13)
+library(clusterSEs)
+library(stargazer)
+library(effects)
+library(knitr)
+df <- read.csv("../data/finaldataset.csv")
+df2 <- read.dta13("../data/deming_final_data.dta")
+# Preprocessing (some more)
+df$hs.age <- rowMeans(df[,c("Age_1stHS88","Age_1stHS90","Age_1stHS92","Age_1stHS94","Age_1stHS96","Age_1stHS98",
+                         "Age_1stHS100","Age_1stHS102","Age_1stHS98","Age_1stHS104")],
+                   na.rm=TRUE)
+calc_age <- function(currentyear,childyear){
+  currentyear-childyear
+}
+df$childage1986 <- calc_age(1986,df2$DOB_Yr_Child)
+df$childage1988 <- calc_age(1988,df2$DOB_Yr_Child)
+df$childage1990 <- calc_age(1990,df2$DOB_Yr_Child)
+df$childage1992 <- calc_age(1992,df2$DOB_Yr_Child)
+df$childage1994 <- calc_age(1994,df2$DOB_Yr_Child)
+df$childage1996 <- calc_age(1996,df2$DOB_Yr_Child)
+df$childage1998 <- calc_age(1998,df2$DOB_Yr_Child)
+df$childage2000 <- calc_age(2000,df2$DOB_Yr_Child)
+df$childage2002 <- calc_age(2002,df2$DOB_Yr_Child)
+df$childage2004 <- calc_age(2004,df2$DOB_Yr_Child)
+## PIAT Participation
+part.number <- rbind(
+  11470-sum(is.na(df$compscoreage6)),
+  11470-sum(is.na(df$compscoreage7)),
+  11470-sum(is.na(df$compscoreage8)),
+  11470-sum(is.na(df$compscoreage9)),
+  11470-sum(is.na(df$compscoreage10)),
+  11470-sum(is.na(df$compscoreage11)),
+  11470-sum(is.na(df$compscoreage12)),
+  11470-sum(is.na(df$compscoreage13)),
+  11470-sum(is.na(df$compscoreage14)),
+  11470-sum(is.na(df$compscoreage15)),
+  11470-sum(is.na(df$compscoreage16)),
+  11470-sum(is.na(df$compscoreage17)),
+  11470-sum(is.na(df$compscoreage18))
+)
+## Age
+part.age <- c(
+  "6 Years Old",
+  "7 Years Old",
+  "8 Years Old",
+  "9 Years Old",
+  "10 Years Old",
+  "11 Years Old",
+  "12 Years Old",
+  "13 Years Old",
+  "14 Years Old",
+  "15 Years Old",
+  "16 Years Old",
+  "17 Years Old",
+  "18 Years Old"
+)
+## Counting by age
+part_function.total <- function(age){
+  part.df <<- subset(df,childage1986==age |childage1988==age |childage1990==age |childage1992==age |childage1994==age |
+                       childage1996==age |childage1998==age |childage2000==age |childage2002==age |childage2004==age)
+  nrow(part.df)
+}
+part.total <- rbind(
+  part_function.total(6),
+  part_function.total(7),
+  part_function.total(8),
+  part_function.total(9),
+  part_function.total(10),
+  part_function.total(11),
+  part_function.total(12),
+  part_function.total(13),
+  part_function.total(14),
+  part_function.total(15),
+  part_function.total(16),
+  part_function.total(17),
+  part_function.total(18)
+)
+## Counting by age, and then head start participation
+part_function <- function(age){
+  part.df <<- subset(df,childage1986==age |childage1988==age |childage1990==age |childage1992==age |childage1994==age |
+                      childage1996==age |childage1998==age |childage2000==age |childage2002==age |childage2004==age)$headstart
+  table(part.df)
+}
+part.headstart <- rbind(
+  part_function(6),
+  part_function(7),
+  part_function(8),
+  part_function(9),
+  part_function(10),
+  part_function(11),
+  part_function(12),
+  part_function(13),
+  part_function(14),
+  part_function(15),
+  part_function(16),
+  part_function(17),
+  part_function(18)
+)
+part.grade <- c(
+  "Kindergarden",
+  "1st Grade",
+  "2nd Grade",
+  "3rd Grade",
+  "4th Grade",
+  "5th Grade",
+  "6th Grade",
+  "7th Grade",
+  "8th Grade",
+  "9th Grade",
+  "10th Grade",
+  "11th Grade",
+  "12th Grade"
+)
+part.school <- c(
+  "Elementary School",
+  "Elementary School",
+  "Elementary School",
+  "Elementary School",
+  "Elementary School",
+  "Elementary School",
+  "Middle School",
+  "Middle School",
+  "Middle School",
+  "High School",
+  "High School",
+  "High School",
+  "High School"
+)
+## Creating Tables
+  
+part.table <- as.data.frame(cbind(part.age,part.grade,part.school,part.total,part.number,part.headstart))
+names(part.table) <- c("Age","Grade","School Type","Total","PIAT Participants","Non-HeadStart","HeadStart")
+table_part <- kable(part.table,caption="Children Summary")
+# Linear Models as the Baseline
+## Primary to elementary
+df$compscore6to11 <- rowMeans(df[,c("compscoreage6","compscoreage7","compscoreage8","compscoreage9","compscoreage10","compscoreage11")],
+                              na.rm=TRUE)
+lm6to11 <- glm(
+  data=df,
+  formula=compscore6to11~
+    Hispanic+Black+Male+
+    FirstBorn+LogInc_0to3+MothED+Father_HH_0to3+PPVTat3+
+    logBW+Repeat+
+    PoorHealth+Age_Moth_Birth+
+    headstart+headstart*Hispanic+headstart*Black+mentaldisability+
+    learndisability)
+## Middle School
+df$compscore12to14 <- rowMeans(df[,c("compscoreage12","compscoreage13","compscoreage14")],na.rm=TRUE)
+lm12to14 <- glm(
+  data=df,
+  formula=compscore12to14~
+    Hispanic+Black+Male+
+    FirstBorn+LogInc_0to3+MothED+Father_HH_0to3+PPVTat3+
+    logBW+Repeat+
+    PoorHealth+Age_Moth_Birth+
+    headstart+headstart*Hispanic+headstart*Black+mentaldisability+
+    learndisability)
+## High School
+df$compscore15to18 <- rowMeans(df[,c("compscoreage15","compscoreage16","compscoreage17","compscoreage18")],na.rm=TRUE)
+#### Note that Father_HH_0to3 and PPVTat3 were removed becuase there were no values found at this level
+lm15to18 <- glm(
+  data=df,
+  formula=compscore15to18~
+    Hispanic+Black+Male+
+    FirstBorn+LogInc_0to3+MothED+
+    logBW+Repeat+
+    PoorHealth+headstart*Hispanic+headstart*Black+Age_Moth_Birth+
+    headstart+mentaldisability+learndisability)
+# Table for linear models
+table_lm <- stargazer::stargazer(lm6to11,lm12to14,lm15to18, type = 'latex',title="Composite Score based on Age",align=TRUE)
+```
+
+## Summary Table
+We first begin with a summary table of the total number of children broken down by age, education level, and primary variables of interest.
+
+```{r summary table,echo=FALSE}
+table_part
+```
+
+As we have children born to females from the NLSY79 survey, there is a spread of children who become eligible for the Head Start Program at different years. We resolve this issue by tabulating the data to reflect specific criteria based on a child's age, rather than the current calendar year. Reading the table from the first row, we see that there are a total of 4,727 children in the survey who were aged 6 at some point in the survey time frame: 3,425 took a PIAT test at age 6, 3,939 did not participate in a Head Start program, and 788 participated in a Head Start program. Note, that the subset of 6 year olds contain children who were born in 1979 up to 1998. This would give reason as to why for the last row of the table, there are only 3,295 children who were aged 18 - these are the children who were born from 1979 to 1986.
+
+## Linear Modeling of Composite Scores
+Our first approach was to define and measure the impact of Head Start programs to the Peabody Picture Vocabulary Test, Peabody Individual Achievement Math Test, and Peabody Individual Achievement Reading Comprehension Test for each child. As the survey was administered annually up to 1994 and then biennially to 2004, we have target data of most children for each year, specifically whether or not they took the PIAT tests. But as the level of participation dropped as the survey moved forward, the data we have for older children are much smaller. The reasoning for this phenomena is currently unknown. Given this, a decision was made to categorize and analyze children based on age ranges rather than specific ages. This would allow an additional level of functional analysis on the school type level, namely, the effects of Head Start on Elementary, Middle, and High School children. 
+
+```{r linear models, results = 'asis', echo=FALSE}
+stargazer(lm6to11,lm12to14,lm15to18, type = 'latex',title="Composite Score based on Age",header=FALSE,single.row = TRUE)
+```
+
+In the dependent variables, we have broadly categorized individuals aged 6 to 11 as Elementary School children, 12 to 14 as Middle School, and 15 to 18 as High School; with **compscore6to11**, **compscore12to14**, and **compscore15to18**, reflecting each category respectively. While in the independent variables, we have a similar list of variables from Elementary School to Middle School. The reason why **Father_HH_0to3** and **PPVTat3** were excluded from the High School Linear Model was because at this point in time, there were no values reported in either variable for each children who participated in the PIAT testing - all values for these two variables were Not-Available. Because of the time frame of the survey, not all children consistently participated in the PIAT tests used to run our regression models.
+
+In terms of magnitude (the absolute value of the coefficient) and significance (p-value), the independent variables that we see that are the biggest factors in a child's testing performance were:
+
+* Race:
+    + **Hispanic**: whether the child was Hispanic, 0 or 1.
+    + **Black**: whether the child was Black, 0 or 1.
+* Socioeconomic factors: 
+    + **FirstBorn**: whether or not the child was the eldest among siblings, 0 or 1.
+    + **LogInc_0to3**: the log scale income of the child from ages 0 to 3.
+    + **Mother ED**: the mother's age in years/
+    + **logBW**: a log scale of the child's weight at birth.
+    + **Repeat**: whether or not the child ever repeated a grade, 0 or 1.
+* Individual Factors
+    + **mentaldisability**: whether or not this child was diagnosed with a mental disability, 0 or 1.
+    + **learndisability**: whether or not this child was diagnosed with a learning disability, 0 or 1.
+    
+Overall, we find that the role of Head Start on a child's short term (Elementary School), to long term (High School), effects to be insignificant at best and negative in magnitude at worst. Whether or not this was attributed to the significant (almost 1/2 decrease) drop in participating children in the survey or because the effects of Head Start (in terms of what it teaches a child and its relevance to subsequent testing parameters) were not related to what was being assessed in the PIAT tests. What we can definitively say was that throughout a child's formative years, mental health and learning disability, followed by whether a child has needed to repeat a grade level, and race, play a significant role in their success. When we interact race with participation with Head Start, we find that there are no significant effects found.
+
+\pagebreak
+
+## Effects of Head Start on PPVT at Age 3
+```{r Library & Data Loading, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Code for loading Library Packages
+library(matrixStats)
+library(readr)
+library(dbplyr)
+library(dplyr)
+library(ggformula)
+library(ggplot2)
+library(ggstance)
+library(grDevices)
+library(haven)
+library(markdown)
+library(Matrix)
+library(pander)
+library(stargazer)
+library(stringr)
+library(tidyr)
+library(tidyverse)
+final <- read.csv("../data/finaldataset.csv", header=TRUE)
+```
+
+We decided to use a mixture of linear models and logit models to analyze the effect of Head Start on the outcome variables of **PPVTat3**, **somecollege**, and **hsgrad**. The table showing effects of Head Start on **PPVTat3** is a linear model. The tables showing Head Start on **somecollege** and **hsgrad** are logit models, and the coefficients for both were exponentiated for ease of interpretation. 
+
+```{r Models, echo=FALSE, results='asis'}
+## Linear Models for PPVTat3
+lmPPVT0 = lm(PPVTat3~headstart, data=final)
+lmPPVT1 = lm(PPVTat3~headstart + Male , data=final)
+lmPPVT2 = lm(PPVTat3~headstart + Hispanic + Black + Male, data=final)
+lmPPVT3 = lm(PPVTat3~headstart + Hispanic + Black + Male + FirstBorn + headstart*Black + headstart*Hispanic, data=final)
+## Logit models for College + Odds Ratios
+glmCE0<- glm(somecollege~headstart, data=final, family=binomial)
+glmCE1<- glm(somecollege~headstart + Male, data=final, family=binomial)
+glmCE2<- glm(somecollege~headstart + Male + Black + Hispanic, data=final, family=binomial)
+glmCE3<- glm(somecollege~headstart + Male + Black + Hispanic + LogInc_0to3+ headstart*Black + headstart*Hispanic, data=final, family=binomial)
+Odd0<- exp(coef(glmCE0))
+Odd1<- exp(coef(glmCE1))
+Odd2<- exp(coef(glmCE2))
+Odd3<- exp(coef(glmCE3))
+## Logit models for highschool grad (highschool is = AGEHSGRAD<12)
+glmhs0<- glm(hsgrad~headstart, data=final, family=binomial)
+glmhs1<- glm(hsgrad~headstart + Male , data=final, family=binomial)
+glmhs2<- glm(hsgrad~headstart + Male + Black + Hispanic , data=final, family=binomial)
+glmhs3<- glm(hsgrad~headstart + Male + Black + Hispanic +LogInc_0to3 + MothED + headstart*Black + headstart*Hispanic, data=final, family=binomial)
+OddHS0<- exp(coef(glmhs0))
+OddHS1<- exp(coef(glmhs1))
+OddHS2<- exp(coef(glmhs2))
+OddHS3<- exp(coef(glmhs3))
+```
+
+```{r PPVT Table, echo=FALSE, results='asis'}
+stargazer::stargazer(lmPPVT0, lmPPVT1,lmPPVT2, lmPPVT3,type="latex", title="Headstart Effect on PPVT Scores at Age 3",header=FALSE,single.row=TRUE, column.sep.width = ".6pt", omit.stat = c("f"))
+```
+
+We begin in column 1 by regressing the data for **PPVTat3** only on **headstart** using a linear model. The effect of the Head Start program in this model shows a very statistically significant, yet negative effect of -6.741. The linear model in column 4 includes **Hispanic**, **Black**, **Male**, **FirstBorn**, and interaction terms for **headstart** with race. The significant variables from this regression are **headstart**, **Hispanic**, **Black**, **Male**, and **FirstBorn**. The **Black** variable has a very large average effect (-12.891) on the outcome of **PPVTat3** scores and is the largest in magnitude. The **headstart** variable still has a significant (p-value <0.05) but is smaller in magnitude and less significant than that of previous regressions with less variables. This means that participation in Head Start has a consistently negative effect on **PPVTat3** with the data provided in our dataset after controlling for other very significant variables. Given that the children who participate in Head Start are likely to come from disadvantaged socioeconomic backgrounds, this plays an important factor in the following models there are negative effects for Head Start. However, this does not mean that Head Start causes lower test scores, this just means that there is a selection bias for children who participate in Head Start. The model in column 4 includes variables that were shown to explain a significant amount of variation in the original dataset and were therefore chosen to be included in order to convey the decreasing marginal effect of Head Start on **PPVTat3** scores at age 3.
+
+\pagebreak
+
+## Effects of Head Start on College Enrollment
+
+```{r College Table, echo=FALSE, results='asis'}
+stargazer::stargazer(glmCE0, glmCE1, glmCE2, glmCE3, type="latex", title="Headstart Effect on College Enrollment",header=FALSE,single.row=TRUE,apply.coef = exp)
+```
+
+The effect of Head Start on college enrollment is measured by the indicator variable **somecollege**. We used a logit model to measure the effects of going to college. Note, the coefficients in the table have been exponentiated for ease of interpretation. Simply running a regression of **headstart** on **somecollege** shows that **headstart** has a very significant effect on the outcome of having college enrollment. The odds of attending college are increased by a factor of 1.625. However, this effect is shown to decrease the odds of attending college when controlling for other significant variables such as **Male**, **Black**, **Hispanic**, **LogInc_0to3**, and interaction **headstart** race variables. In column 4, which includes all variables, the odds of enrolling in college are 0.841 if you participated in the **headstart** program and is very significant. This tells us that after controlling for other highly significant variables, that attending the Head Start program actually hurt your odds of enrolling in college. Once again, this can be explained by the type of individuals who participate in Head Start coming from disadvantaged background compared to more affluent peers.
+
+\pagebreak
+
+## Effects of Head Start on High School Graduation
+
+```{r Highschool Table, echo=FALSE, results='asis'}
+stargazer::stargazer(glmhs0, glmhs1, glmhs2, glmhs3, type="latex", title="Headstart Effects on High School Graduation",header=FALSE,single.row=TRUE, apply.coef = exp)
+```
+
+In order to measure the effect of Head Start on whether a child graduates High School we decided to use a logit model in order to tell us the odds ratio. To start in column 1, we regressed **headstart** on **hsgrad** and then exponentiated the coefficients for the all the regressions included in the table. When regressing **headstart** only on **hsgrad** we see that being enrolled in the program increases the odds of graduating High School by a factor 1.625 and is very significant. Column 4 includes the variables **Male**, **Black**,**Hispanic**,**LogInc_0to3**,**MothED**, and **headstart** interaction terms. Once again, the effect of **headstart** improves the odds of graduating High School by a factor of 0.854 and is statistically significant. Once we add for other important and highly significant variables, the **headstart** variable decreases the odds of graduating high school. We believe that this is caused by selection bias within our dataset as the effects in Deming's original research paper also showed this  result on High School graduation.
+
+\pagebreak
+
+## Effect of Head Start on Grade Repetition
+
+```{r datasetup, include=FALSE, warning=FALSE}
+#call libraries
+library(tidyverse)
+library(foreign)
+library(psycho)
+library(reshape2)
+library(expss)
+library(mosaic)
+library(foreach)
+library(gamlr)
+library(stargazer)
+#read data
+dt = read.csv('../data/finaldataset.csv')
+da <- dt[complete.cases(dt$LogInc_0to3),]
+db <- da[complete.cases(da$Father_HH_0to3),]
+dc <- db[complete.cases(db$MothED),]
+dd <- dc[complete.cases(dc$FirstBorn),]
+de <- dd[complete.cases(dd$Age_Moth_Birth),]
+dg <- de[complete.cases(de$Repeat),]
+dh <- dg[which(dg$LogInc_0to3<=10),]
+df <- dh[which(dh$mentaldisability==0),]
+##########################################################################33
+```
+
+We try to see if children who attend Head Start have a higher or lower probability of repeating their grade. We compare Head Start participants to children who would otherwise be eligible but did not participate. First, we take into consideration children whose family income is below the federal poverty level (<$22,000), we exclude observations with *"NA"* values as we don't want missing values to affect our analysis. Hence, we choose observations that have non missing values for **LogInc0to3**, **Father_HH_0to3**, **MothEd**, **FirstBorn**, and **Age_Moth_Birth**. We ran a logit model to see the effect of participation in Head Start on grade repetition. We ran multiple regressions, controlling for various dependent variables and get the following results. It is important to note that the values in the table below are the odds ratio and not just the coefficients of the variables.
+
+```{r repeat, echo=FALSE, warning=FALSE, results='asis'}
+############Effect of HS on Repeat grade
+# baseline medium model
+lm_one <- glm(repeatgrade ~  headstart, data=df, family = binomial)
+lm_few <- glm(repeatgrade ~  headstart+Hispanic+Black+MothED+learndisability, data=df, family = binomial)
+lm_medium <- glm(repeatgrade ~  headstart+Hispanic+Black+headstart*Hispanic+headstart*Black+Male+MothED+learndisability, data=df, family = binomial)
+stargazer::stargazer(lm_one, lm_few, lm_medium, apply.coef=exp, type="latex", title="Head Start Effects on Grade Repetition", header=FALSE, single.row=TRUE)
+############################################################################
+```
+
+The odds of a Head Start participant ever repeating a grade as compared to a non Head Start participant is 0.924 and significant (p-value <0.05), while controlling for other variables. This odds ratio is even lower for Hispanics who attended a Head Start program, however, Black children who attended Head Start have an odds ratio of 1.265 as compared to their non Head Start counterparts. This shows that Head Start participants in general have lower probabilities of repeating a grade as compared to non Head Start participants.
+
+\pagebreak
+
+## Effect of Head Start Participation on Poor Health
+
+NLSY79 collects data from various participants where they are asked to self-report their health condition on a 5 point scale. If they report it as either Poor (1) or Fair (2), as opposed to Good (3), Very Good (4) or Excellent (5), we categorize them as self-reported Poor Health. We ran multiple logit regression models on  Head Start participation and self-reported Poor Health compared to non Head Start participants. The table below summarizes our odds ratios.
+
+```{r PoorHealth, echo=FALSE, warning=FALSE, results='asis'}
+###############Effect of HS on SRH
+di <- df[complete.cases(df$PoorHealth),]
+dj <- di[complete.cases(di$logBW),]
+# baseline medium model
+lm2_one <- glm(PoorHealth ~  headstart, data=dj, family = binomial)
+lm2_few <- glm(PoorHealth ~  headstart+Hispanic+Black+Male+logBW, data=dj, family = binomial)
+lm2_medium <- glm(PoorHealth ~  headstart+Hispanic+Black+headstart*Hispanic+headstart*Black+Male+logBW, data=dj, family = binomial)
+stargazer::stargazer(lm2_one, lm2_few, lm2_medium, apply.coef=exp, type="latex", title="Head Start Effects on Reporting Poor Health", header=FALSE, single.row=TRUE)
+#######################################################################################
+```
+
+The Head Start participants are less likely in general to report Poor Health conditions as compared to non Head Start participants. However, when controlling for Head Start interactions with race, we get on average, a white Head Start participant is 1.12 times more likely to report Poor Health conditions as compared to a white non Head start participant. Black and Hispanic children however, are still less likely to report Poor Health conditions if they attend Head Start, although these results aren't statistically significant. 
+
+\pagebreak
+
+## Effect of Head Start Participation on Post-High School Idleness
+
+We now look at students who graduated from High School but neither enrolled in college nor went into the labor force. We measure *idleness* using an indicator variable, **Idle** which is 1 if the student neither enrolls in college nor enters the labor market and 0 if otherwise. By running logit regression models of Head Start participation on **Idle**, we get the following results.
+
+```{r Idle, echo=FALSE, warning=FALSE, results='asis'}
+dk <- df[complete.cases(df$Idle),]
+# baseline medium model
+lm3_one <- glm(Idle ~  headstart, data=dk, family = binomial)
+lm3_few <- glm(Idle ~  headstart+Hispanic+Black+Male+logBW, data=dk, family = binomial)
+lm3_medium <- glm(Idle ~  headstart+Hispanic+Black+headstart*Hispanic+headstart*Black+Male+hsgrad, data=dk, family = binomial)
+stargazer::stargazer(lm3_one, lm3_few, lm3_medium, apply.coef=exp, type="latex", title="Head Start Effects on Idleness",  header=FALSE, single.row=TRUE)
+#######################################################################################
+```
+
+The odds ratio of Head Start participants who are *Idle* are compared to non Head Start participants. The odds ratio of Head Start participants seem to follow a similar pattern as those who self-reported Poor Health odds ratio. Head Start participants in general are less likely than non Head Start participants to be idle. However, when controlled for Head Start interactions with race, Hispanic and Black Head Start participants are less likely to be idle compared to their non Head Start counterparts. However, white Head Start participants are just as likely to be idle compared to their non Head Start counterparts.
+
+# Conclusion
+
+We are aware of the limitations of both our dataset and analysis. The dataset we use has enough observations to account for the short term benefits, however, the time frame only covers respondents from 1986 to 2004. The most recent NLSY79 covers respondents from 1986 to 2016, which would give us a larger dataset to measure long term outcomes more effectively. We also use linear and logit models to estimate the effects. However, there are multiple variables that we don't account for such as fixed effects from belonging to the same family, clustering errors, etc. If we had more time, we would have liked to explore the effect of Head Start on other long term outcomes such as the age at which they get married, divorce rates, income levels, credit scores, home ownership, etc.
+
+\pagebreak
+
+# Bibliography
+
+Anderson, Michael L. 2008. *"Multiple Inference and Gender Differences in the Effects of Early Intervention: A Reevaluation of the Abecedarian, Perry Preschool, and Early Training Projects."* Journal of the American Statistical Association, 103(484): 1481-95
+
+Barnett, W. Steven. 1992. *"Benefits of Compensatory Preschool Education."* Journal of Human Resources, 27(2): 279-312
+
+Barnett, W. Steven; Hustedt, Jason T. January - March 2005. *"Head Start's Lasting Benefits".* Infants & Young Children. 18 (1): 16-24. CiteSeerX 10.1.1.644.8716. doi:10.1097/00001163-200501000-00003.
+
+Barnett, W. Steven; Jason T. Hustedt; Allison H. Friedman; Judi Stevenson Boyd; and Pat Ainsworth. 2007. *The State of Preschool 2007: State Preschool Yearbook.* New Brunswick, NJ: National Institute for Early Education Research.
+
+Belfield, Clive R.; Milagros Nores, Steven Barnett; and Lawrence Schweinhart. 2006. *"The High/ Scope Perry Preschool Program: Cost-Benefit Analysis Using Data from the Age-40 Followup."* Journal of Human Resources, 40(1): 162-90.
+
+Campbell, Frances A.; Craig T. Ramey; Elizabeth Pungello; Joseph Sparling; and Shari Miller-Johnson. 2002. *"Early Childhood Education: Young Adult Outcomes From the Abecedarian Project."* Applied Developmental Science, 6(1): 42-57.
+
+Besharov, Douglas J.; Call, Douglas M. (February 7, 2009). "Head Start Falls Further Behind". College Park, MD: The New York Times. Retrieved February 8, 2011.
+
+Case, Anne; Darren Lubotsky; and Christina Paxson. 2002. *"Economic Status and Health in Childhood: The Origins of the Gradient."* American Economic Review, 92(5): 1308-34.
+
+Currie, Janet. 2001. *"Early Childhood Education Programs."* Journal of Economic Perspectives, 15(2): 213-38.
+
+Currie, Janet; and Matthew Neidell. 2007. *"Getting inside the 'Black Box' of Head Start Quality: What Matters and What Doesn't."* Economics of Education Review, 26(1): 83-99.
+
+Currie, Janet; and Duncan Thomas. 1995. *"Does Head Start Make a Difference?"* American Economic Review, 85(3): 341-64
+
+Currie, Janet; and Duncan Thomas. 2000. *"School Quality and the Longer-Term Effects of Head Start."* Journal of Human Resources, 35(4): 755-74.
+
+Deming, David. 2009. *"Early Childhood Intervention and Life-Cycle Skill Development: Evidence from Head Start".* American Economic Journal: Applied Economics. 1 (3): 111-134. doi:10.1257/app.1.3.111.
+
+*Head Start Impact Study: First Year Findings.* U.S. Department of Health and Human Services, Administration for Children and Families. 2005. https://www.acf.hhs.gov/sites/default/files/opre/first_yr_execsum.pdf
+
+Klein, Joe. 2011. *"Time to Ax Public Programs That Don't Yield Results".* Time. http://content.time.com/time/nation/article/0,8599,2081778,00.html
+
+Garces, Eliana, Duncan Thomas, and Janet Currie. 2002. *"Longer-Term Effects of Head Start."* American Economic Review, 92(4): 999-1012.
+
+Gormley, William T., Jr., and Ted Gayer. 2005. *"Promoting School Readiness in Oklahoma: An Evaluation of Tulsa's Pre-K Program."* Journal of Human Resources, 40(3): 533-58.
+
+Gonzalez-Mena, Janet. 2009. *Child, Family, and Community(Fifth ed.)*. Pearson Education. ISBN 978-0135132302.
+
+*Head Start factsheet.* U.S. Department of Health and Human Services, archived from the original on January 15, 2010. https://web.archive.org/web/20100115192748/http:/www.acf.hhs.gov/opa/fact_sheets/headstart_factsheet.html
+
+Heckman, James J. 2006. *"Skill Formation and the Economics of Investing in Disadvantaged Children."* Science, 312(5782): 1900-1902
+
+*Impact study*. U.S. Department of Health and Human Services. https://www.acf.hhs.gov/opre/research/project/head-start-impact-study-and-follow-up
+
+Lee, Kyunghee. 2011. *"Impacts of the duration of Head Start enrollment on children's academic outcomes: Moderation effects of family risk factors and earlier outcomes".* Journal of Community Psychology. 39(6): 698-716. doi:10.1002/jcop.20462.
+
+Lee, V. E., Brooks-Gunn, J., Schnur, E., Liaw, F. R. (1990). *"Are Head Start Effects Sustained? A Longitudinal Follow-up Comparison of Disadvantaged Children Attending Head Start, No Preschool, and Other Preschool Programs".* Child Development. 61 (2): 495-507. doi:10.1111/j.1467-8624.1990.tb02795.x. PMID 2344785.
+
+Levin, Henry M., Clive Belfield, Peter Muennig, and Cecilia Rouse. 2007. *"The Public Returns to Public Educational Investments in African-American Males."* Economics of Education Review, 26(6): 699-708.
+
+Ludwig, Jens, and Douglas L. Miller. 2007. *"Does Head Start Improve Children's Life Chances? Evidence from a Regression Discontinuity Design."* Quarterly Journal of Economics, 122(1): 159-208.
+
+Ludwig, Jens, and Deborah A. Phillips. 2007. *"The Benefits and Costs of Head Start."* National Bureau of Economic Research Working Paper 12973
+
+Ludwig, Jens, and Deborah A. Phillips. 2008. *"Long-Term Effects of Head Start on Low-Income Children."* Annals of the New York Academy of Sciences, 1136: 257-68.
+
+Neal, Derek A., and William R. Johnson. 1996. *"The Role of Premarket Factors in Black-White Wage Differences."* Journal of Political Economy, 104(5): 869-95.
+
+Schiff, Bennett, Goodell, Stephen. *The Office of Economic Opportunity During the Adminstration of President Lyndon B. Johnson.* 1963-1969. Office of Economic Opportunity. http://www.cencomfut.com/OEO%20and%20CSA%20Instructions/OEO%20Administrative%20History%20Nov%201963%20--%20Jan%201969.pdf
+
+Weigel, Margaret. August 11, 2011. *"Head Start Impact: Department of Health and Human Services Report".* Journalist's Resource.org.
